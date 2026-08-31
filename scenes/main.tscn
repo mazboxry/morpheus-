@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://nl4mkds6sdgk"]
+
+[ext_resource type="PackedScene" uid="uid://c0litjsckv6jx" path="res://scenes/ui/dice_button.tscn" id="1_o5qli"]
+[ext_resource type="PackedScene" uid="uid://ch6fnordrpr" path="res://scenes/dice/dice_ball.tscn" id="2_0wfyh"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_6h05h"]
+flip_faces = true
+size = Vector3(5, 3, 5)
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_sugp2"]
+rough = true
+bounce = 0.3
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_0wfyh"]
+data = PackedVector3Array(2.5, 1.5, 2.5, -2.5, 1.5, 2.5, -2.5, -1.5, 2.5, 2.5, -1.5, 2.5, 2.5, 1.5, 2.5, -2.5, -1.5, 2.5, -2.5, 1.5, -2.5, 2.5, 1.5, -2.5, 2.5, -1.5, -2.5, -2.5, -1.5, -2.5, -2.5, 1.5, -2.5, 2.5, -1.5, -2.5, 2.5, 1.5, -2.5, 2.5, 1.5, 2.5, 2.5, -1.5, 2.5, 2.5, -1.5, -2.5, 2.5, 1.5, -2.5, 2.5, -1.5, 2.5, -2.5, 1.5, 2.5, -2.5, 1.5, -2.5, -2.5, -1.5, -2.5, -2.5, -1.5, 2.5, -2.5, 1.5, 2.5, -2.5, -1.5, -2.5, -2.5, 1.5, 2.5, 2.5, 1.5, 2.5, 2.5, 1.5, -2.5, -2.5, 1.5, -2.5, -2.5, 1.5, 2.5, 2.5, 1.5, -2.5, 2.5, -1.5, 2.5, -2.5, -1.5, 2.5, -2.5, -1.5, -2.5, 2.5, -1.5, -2.5, 2.5, -1.5, 2.5, -2.5, -1.5, -2.5)
+
+[node name="Main" type="Node3D" unique_id=212206655]
+
+[node name="UI" type="Control" parent="." unique_id=575908273]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DiceButton" parent="UI" unique_id=1442857506 instance=ExtResource("1_o5qli")]
+layout_mode = 0
+team = null
+
+[node name="DiceBall" parent="." unique_id=1926073680 instance=ExtResource("2_0wfyh")]
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1069800265]
+transform = Transform3D(1, 0, 0, 0, 0.5633145, 0.82624257, 0, -0.82624257, 0.5633145, 0, 1.1618042, 1.8793694)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=278183831]
+transform = Transform3D(1, 0, 0, 0, 0.6712948, 0.7411905, 0, -0.7411905, 0.6712948, 0, 0, 1.0332962)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=829810808]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.23785067, 0)
+visible = false
+mesh = SubResource("BoxMesh_6h05h")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1698467365]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.23785067, 0)
+physics_material_override = SubResource("PhysicsMaterial_sugp2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1278993311]
+shape = SubResource("ConcavePolygonShape3D_0wfyh")

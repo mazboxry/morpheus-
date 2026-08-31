@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://cn1bxx86bea0"]
+
+[ext_resource type="Script" uid="uid://b1lotqpr1nw7q" path="res://scenes/units/monster.gd" id="1_hc55a"]
+[ext_resource type="Script" uid="uid://b5p1e60r3dcr0" path="res://scenes/units/monster_hitbox.gd" id="2_kh8pr"]
+
+[node name="Monster" type="CharacterBody3D" unique_id=1662645305]
+visible = false
+script = ExtResource("1_hc55a")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=396390116]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=243279544]
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="." unique_id=4766972]
+
+[node name="Hitbox" type="Area3D" parent="." unique_id=2128480358]
+script = ExtResource("2_kh8pr")
+
+[node name="StatusContainer" type="Node3D" parent="." unique_id=1237527911]

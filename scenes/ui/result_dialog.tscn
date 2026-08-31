@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://be5r3htpbsl1h"]
+
+[ext_resource type="Script" uid="uid://cdqv5wcccbfvm" path="res://scenes/ui/result_dialog.gd" id="1_3xrdv"]
+
+[node name="ResultDialog" type="Control" unique_id=906876345]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_3xrdv")

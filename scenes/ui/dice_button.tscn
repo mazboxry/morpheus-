@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://c0litjsckv6jx"]
+
+[ext_resource type="Script" uid="uid://bd333vylibfjm" path="res://scenes/ui/dice_button.gd" id="1_ik5vu"]
+
+[node name="DiceButton" type="Button" unique_id=1442857506]
+offset_right = 8.0
+offset_bottom = 8.0
+text = "DICE ROLL"
+script = ExtResource("1_ik5vu")
