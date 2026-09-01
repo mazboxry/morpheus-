@@ -20,11 +20,11 @@ enum State {
 }
 
 const ROOT_MODAL_SCENES := {
-	State.BOOT: "res://scenes/ui/boot_modal.tscn",
+	State.BOOT: "res://scenes/ui/title_modal.tscn",
 	State.TITLE: "res://scenes/ui/title_modal.tscn",
 	State.CONFIG: "res://scenes/ui/config_modal.tscn",
 	State.TUTORIAL: "res://scenes/ui/tutorial_modal.tscn",
-	State.MAIN_GAME: "res://scenes/main_game.tscn",
+	State.MAIN_GAME: "res://scenes/main.tscn",
 	State.STAGE_CLEAR: "res://scenes/ui/stage_clear_modal.tscn",
 	State.GAME_OVER: "res://scenes/ui/game_over_modal.tscn",
 	State.GAME_CLEAR: "res://scenes/ui/game_clear_modal.tscn",
