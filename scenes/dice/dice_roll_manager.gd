@@ -1,25 +1,30 @@
 class_name DiceRollManager
 extends Node
-## Local dice controller: each die settles, reads its top face, then reports once.
+## Receives a *physical* result from every RigidBody3D die.
 
 signal die_stopped(result: Dictionary)
 signal roll_finished(results: Array[Dictionary])
 
-const FACES := [1, 1, 1, 2, 2, 3]
 var _results: Array[Dictionary] = []
+var _expected_count := 0
 
-func roll(spawn_positions: Array[Vector2]) -> void:
+func begin_roll(expected_count: int) -> void:
+	_expected_count = expected_count
 	_results.clear()
-	for index in spawn_positions.size():
-		await get_tree().create_timer(0.42).timeout
-		var face_index := randi_range(0, FACES.size() - 1)
-		var result := {
-			"die_index": index,
-			"top_face_index": face_index,
-			"rarity": FACES[face_index],
-			"position": spawn_positions[index],
-		}
-		_results.append(result)
-		die_stopped.emit(result)
-	roll_finished.emit(_results.duplicate(true))
-	Game.report_dice_results(_results)
+
+func report_physical_die(die_index: int, top_face: int, landing_position: Vector3) -> void:
+	if _results.any(func(result: Dictionary) -> bool: return result["die_index"] == die_index):
+		return
+	var result := {
+		"die_index": die_index,
+		"top_face_index": top_face - 1,
+		"rarity": top_face,
+		"position": Vector2(clampf(landing_position.x / 10.0 + 0.5, 0.12, 0.72), clampf(landing_position.z / 8.0 + 0.5, 0.30, 0.72)),
+		"landing_position": landing_position,
+	}
+	_results.append(result)
+	die_stopped.emit(result)
+	if _results.size() == _expected_count:
+		_results.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a["die_index"] < b["die_index"])
+		roll_finished.emit(_results.duplicate(true))
+		Game.report_dice_results(_results)
