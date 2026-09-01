@@ -1,0 +1,89 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scenes/showcase_main.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/ui/summon_demo.tscn" id="2_demo"]
+[ext_resource type="Script" path="res://scenes/dice/dice_roll_manager.gd" id="3_dice"]
+[ext_resource type="Script" path="res://scenes/monster_summoner.gd" id="4_summoner"]
+
+[node name="ShowcaseMain" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.025, 0.045, 0.1, 1)
+mouse_filter = 2
+[node name="Header" type="Label" parent="."]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 25.0
+offset_right = 900.0
+offset_bottom = 75.0
+theme_override_colors/font_color = Color(0.64, 0.91, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "MORPHEUS  /  DREAMFRONT DEFENSE"
+[node name="Sub" type="Label" parent="."]
+layout_mode = 0
+offset_left = 32.0
+offset_top = 73.0
+offset_right = 900.0
+offset_bottom = 105.0
+theme_override_colors/font_color = Color(0.45, 0.65, 0.84, 1)
+theme_override_font_sizes/font_size = 16
+text = "DICE DEPLOYMENT  •  SUMMON  •  AUTO MARCH"
+[node name="HUD" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -104.0
+grow_horizontal = 2
+grow_vertical = 0
+[node name="Status" type="Label" parent="HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 32.0
+offset_top = 8.0
+offset_right = -32.0
+offset_bottom = 36.0
+theme_override_colors/font_color = Color(0.78, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 18
+text = "ダイスを振って、出た目のモンスターを召喚しよう"
+horizontal_alignment = 1
+[node name="Results" type="Label" parent="HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 32.0
+offset_top = 40.0
+offset_right = -32.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+[node name="RollButton" type="Button" parent="HUD"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 260.0
+offset_top = 72.0
+offset_right = -260.0
+offset_bottom = 122.0
+theme_override_font_sizes/font_size = 21
+text = "ダイスをふる"
+[connection signal="pressed" from="HUD/RollButton" to="." method="_on_roll_pressed"]
+[node name="DiceRollManager" type="Node" parent="."]
+script = ExtResource("3_dice")
+[node name="MonsterSummoner" type="Node" parent="."]
+script = ExtResource("4_summoner")
+[node name="SummonDemo" parent="." instance=ExtResource("2_demo")]

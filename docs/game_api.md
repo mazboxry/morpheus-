@@ -89,6 +89,7 @@ signal root_modal_requested(GameState state, Dictionary payload);
 signal stage_requested(StringName stage_id);
 
 signal dice_roll_requested(void);
+signal dice_results_ready(Array[Dictionary] results);
 ```
 
 ### `state_changed(previous_state, current_state, payload)`
@@ -105,6 +106,14 @@ signal dice_roll_requested(void);
 
 開始するステージ ID の通知。`start_main_game()` 時に、`state_changed` より先に
 発行される。ステージ読込み担当はこの ID を受け取る。
+
+### `dice_results_ready(results)`
+
+ダイスコントローラーが全ダイスの停止・上面判定を終えた時に `report_dice_results()` 経由で発行する。`Game` は結果を保持せず、MainGame 内のモンスターサモナーへ渡すための通知だけを行う。
+
+### `report_dice_results(results)`
+
+ダイスコントローラーが停止位置・上面をすべて確定した後に呼ぶ。引数は複製して `dice_results_ready` として即時通知され、`Game` 自身は出目・召喚ユニットを保持しない。
 
 ### `dice_roll_requested()`
 
@@ -123,6 +132,7 @@ void Game.open_tutorial(void);
 void Game.start_main_game(StringName stage_id = Game.current_stage_id);
 void Game.finish_stage(bool is_final_stage);
 void Game.lose_game(void);
+void Game.report_dice_results(Array[Dictionary] results);
 ```
 
 ### `_ready()`

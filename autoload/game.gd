@@ -7,6 +7,7 @@ signal state_changed(previous_state: State, current_state: State, payload: Dicti
 signal root_modal_requested(state: State, payload: Dictionary)
 signal stage_requested(stage_id: StringName)
 signal dice_roll_requested
+signal dice_results_ready(results: Array[Dictionary])
 
 enum State {
 	BOOT,
@@ -69,3 +70,9 @@ func finish_stage(is_final_stage: bool) -> void:
 
 func lose_game() -> void:
 	transition_to(State.GAME_OVER)
+
+
+## Dice controllers report resolved top faces through this narrow hand-off.
+## Game forwards the immutable payload; summoning remains scene-local.
+func report_dice_results(results: Array[Dictionary]) -> void:
+	dice_results_ready.emit(results.duplicate(true))
