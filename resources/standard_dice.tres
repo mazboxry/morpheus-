@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="DiceDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/dice_definition.gd" id="1_dice"]
+
+[resource]
+script = ExtResource("1_dice")
+display_name = "Standard Die"
+faces = Array[int]([1, 1, 1, 2, 2, 3])
