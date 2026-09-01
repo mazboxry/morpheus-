@@ -1,89 +1,94 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scenes/showcase_main.gd" id="1_main"]
-[ext_resource type="PackedScene" path="res://scenes/ui/summon_demo.tscn" id="2_demo"]
-[ext_resource type="Script" path="res://scenes/dice/dice_roll_manager.gd" id="3_dice"]
-[ext_resource type="Script" path="res://scenes/monster_summoner.gd" id="4_summoner"]
+[ext_resource type="PackedScene" path="res://scenes/dice/dice_ball.tscn" id="2_dice"]
+[ext_resource type="Script" path="res://scenes/dice/dice_roll_manager.gd" id="3_manager"]
 
-[node name="ShowcaseMain" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 1
+background_color = Color(0.015, 0.03, 0.08, 1)
+ambient_light_source = 3
+ambient_light_color = Color(0.33, 0.48, 0.72, 1)
+ambient_light_energy = 0.75
+glow_enabled = true
+glow_intensity = 1.15
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_panel"]
+bg_color = Color(0.025, 0.08, 0.17, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.7, 0.95, 0.7)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[node name="ShowcaseMain" type="Node3D"]
 script = ExtResource("1_main")
 
-[node name="Background" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.025, 0.045, 0.1, 1)
-mouse_filter = 2
-[node name="Header" type="Label" parent="."]
-layout_mode = 0
-offset_left = 30.0
-offset_top = 25.0
-offset_right = 900.0
-offset_bottom = 75.0
-theme_override_colors/font_color = Color(0.64, 0.91, 1, 1)
-theme_override_font_sizes/font_size = 30
-text = "MORPHEUS  /  DREAMFRONT DEFENSE"
-[node name="Sub" type="Label" parent="."]
-layout_mode = 0
-offset_left = 32.0
-offset_top = 73.0
-offset_right = 900.0
-offset_bottom = 105.0
-theme_override_colors/font_color = Color(0.45, 0.65, 0.84, 1)
-theme_override_font_sizes/font_size = 16
-text = "DICE DEPLOYMENT  •  SUMMON  •  AUTO MARCH"
-[node name="HUD" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -104.0
-grow_horizontal = 2
-grow_vertical = 0
-[node name="Status" type="Label" parent="HUD"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 32.0
-offset_top = 8.0
-offset_right = -32.0
-offset_bottom = 36.0
-theme_override_colors/font_color = Color(0.78, 0.9, 1, 1)
-theme_override_font_sizes/font_size = 18
-text = "ダイスを振って、出た目のモンスターを召喚しよう"
-horizontal_alignment = 1
-[node name="Results" type="Label" parent="HUD"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 32.0
-offset_top = 40.0
-offset_right = -32.0
-offset_bottom = 68.0
-theme_override_colors/font_color = Color(1, 0.85, 0.4, 1)
-theme_override_font_sizes/font_size = 18
-horizontal_alignment = 1
-[node name="RollButton" type="Button" parent="HUD"]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 260.0
-offset_top = 72.0
-offset_right = -260.0
-offset_bottom = 122.0
-theme_override_font_sizes/font_size = 21
-text = "ダイスをふる"
-[connection signal="pressed" from="HUD/RollButton" to="." method="_on_roll_pressed"]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(10, 9.5, 13)
+current = true
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-55, -35, 0)
+light_color = Color(0.65, 0.84, 1, 1)
+light_energy = 1.5
+shadow_enabled = true
+
+[node name="RimLight" type="OmniLight3D" parent="."]
+position = Vector3(-3, 5, 2)
+light_color = Color(0.36, 0.4, 1, 1)
+omni_range = 14.0
+light_energy = 4.0
+
+[node name="Battlefield" type="Node3D" parent="."]
+[node name="DiceBall" parent="." instance=ExtResource("2_dice")]
+[node name="Army" type="Node3D" parent="."]
 [node name="DiceRollManager" type="Node" parent="."]
-script = ExtResource("3_dice")
-[node name="MonsterSummoner" type="Node" parent="."]
-script = ExtResource("4_summoner")
-[node name="SummonDemo" parent="." instance=ExtResource("2_demo")]
+script = ExtResource("3_manager")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="HUD" type="PanelContainer" parent="CanvasLayer"]
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 630.0
+offset_bottom = 176.0
+theme_override_styles/panel = SubResource("StyleBox_panel")
+[node name="Margin" type="MarginContainer" parent="CanvasLayer/HUD"]
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/HUD/Margin"]
+theme_override_constants/separation = 5
+[node name="Title" type="Label" parent="CanvasLayer/HUD/Margin/VBox"]
+theme_override_colors/font_color = Color(0.65, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "MORPHEUS  |  3D DICE COMMAND"
+[node name="Status" type="Label" parent="CanvasLayer/HUD"]
+offset_left = 18.0
+offset_top = 50.0
+offset_right = 588.0
+offset_bottom = 78.0
+theme_override_colors/font_color = Color(0.82, 0.92, 1, 1)
+text = "ダイスを振って、3D召喚部隊を出撃させよう"
+[node name="Results" type="Label" parent="CanvasLayer/HUD"]
+offset_left = 18.0
+offset_top = 78.0
+offset_right = 588.0
+offset_bottom = 104.0
+theme_override_colors/font_color = Color(1, 0.82, 0.35, 1)
+[node name="RollButton" type="Button" parent="CanvasLayer/HUD"]
+offset_left = 350.0
+offset_top = 108.0
+offset_right = 584.0
+offset_bottom = 147.0
+theme_override_font_sizes/font_size = 17
+text = "ダイスをふる / ROLL"
+[connection signal="pressed" from="CanvasLayer/HUD/RollButton" to="." method="_on_roll_pressed"]
