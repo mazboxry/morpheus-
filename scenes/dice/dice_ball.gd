@@ -1,7 +1,8 @@
 class_name DiceBall
 extends Node3D
-## A reusable 3D dice tray.  The top face is read from the RigidBody3D basis,
-## rather than being chosen by the manager.
+## A reusable 3D dice tray with a SnowDome staging phase.
+## In the ready/staging phase, dice bounce within SnowDome using Area3D point gravity.
+## When roll() is called, SnowDome is disabled and hidden, releasing dice onto the tray.
 
 signal die_settled(die_index: int, top_face: int, landing_position: Vector3)
 
@@ -10,6 +11,9 @@ const FACE_DIRECTIONS := [Vector3.UP, Vector3.DOWN, Vector3.RIGHT, Vector3.LEFT,
 const FACE_VALUES := [1, 6, 3, 4, 2, 5]
 const DIE_COLORS := [Color("7ee7ff"), Color("aa94ff"), Color("ffd56e"), Color("ff91b5")]
 
+@onready var snow_dome: StaticBody3D = $SnowDome
+@onready var invisible_bumper: Area3D = $InvisibleBumper
+
 var _dice: Array[RigidBody3D] = []
 var _settled: Array[bool] = [false, false, false, false]
 var _quiet_time: Array[float] = [0.0, 0.0, 0.0, 0.0]
@@ -17,22 +21,49 @@ var _rolling := false
 
 func _ready() -> void:
 	_build_tray()
+	_setup_dome_stage()
 	for index in DIE_COUNT:
 		var die := get_node("PhysicalDie%d" % (index + 1)) as RigidBody3D
 		_configure_die(die, index)
 		_dice.append(die)
 
+func _setup_dome_stage() -> void:
+	if snow_dome:
+		snow_dome.show()
+		snow_dome.process_mode = Node.PROCESS_MODE_INHERIT
+
 func roll() -> void:
 	_rolling = true
 	_settled = [false, false, false, false]
 	_quiet_time = [0.0, 0.0, 0.0, 0.0]
+	if snow_dome:
+		snow_dome.hide()
+		snow_dome.process_mode = Node.PROCESS_MODE_DISABLED
 	for index in _dice.size():
 		var die := _dice[index]
 		die.freeze = false
-		die.position = Vector3(-2.2 + index * 1.45, 3.2 + index * 0.25, randf_range(-0.7, 0.7))
-		die.rotation = Vector3(randf_range(-2.0, 2.0), randf_range(-2.0, 2.0), randf_range(-2.0, 2.0))
-		die.linear_velocity = Vector3(randf_range(-1.8, 1.8), randf_range(0.5, 2.8), randf_range(-1.5, 1.5))
-		die.angular_velocity = Vector3(randf_range(-12.0, 12.0), randf_range(-12.0, 12.0), randf_range(-12.0, 12.0))
+		die.apply_central_impulse(Vector3(randf_range(-1.2, 1.2), randf_range(0.2, 1.5), randf_range(-1.0, 1.0)))
+		die.apply_torque_impulse(Vector3(randf_range(-4.0, 4.0), randf_range(-4.0, 4.0), randf_range(-4.0, 4.0)))
+
+func reset_dome() -> void:
+	_rolling = false
+	_settled = [false, false, false, false]
+	_quiet_time = [0.0, 0.0, 0.0, 0.0]
+	if snow_dome:
+		snow_dome.show()
+		snow_dome.process_mode = Node.PROCESS_MODE_INHERIT
+	var initial_positions := [
+		Vector3(0.35, 3.3, 0.1),
+		Vector3(-0.3, 3.1, 0.3),
+		Vector3(-0.1, 2.8, -0.35),
+		Vector3(-0.4, 2.7, -0.2)
+	]
+	for index in _dice.size():
+		var die := _dice[index]
+		die.freeze = false
+		die.position = initial_positions[index % initial_positions.size()]
+		die.linear_velocity = Vector3.ZERO
+		die.angular_velocity = Vector3.ZERO
 
 func _physics_process(delta: float) -> void:
 	if not _rolling:

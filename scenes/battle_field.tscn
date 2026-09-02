@@ -1,6 +1,132 @@
 [gd_scene format=3 uid="uid://biiqpqecy7f0v"]
 
-[ext_resource type="Script" uid="uid://cowgqh8phdpyq" path="res://scenes/battle_field.gd" id="1_8rigl"]
+[ext_resource type="Script" uid="uid://cowgqh8phdpyq" path="res://scenes/battle_field.gd" id="1_battlefield"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_player_ground"]
+albedo_color = Color(0.06, 0.16, 0.28, 1)
+metallic = 0.2
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.03, 0.08, 0.15, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_enemy_ground"]
+albedo_color = Color(0.24, 0.08, 0.16, 1)
+metallic = 0.2
+roughness = 0.4
+emission_enabled = true
+emission = Color(0.12, 0.04, 0.08, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_divider"]
+albedo_color = Color(0.38, 0.78, 0.9, 1)
+emission_enabled = true
+emission = Color(0.38, 0.78, 0.9, 1)
+emission_energy_multiplier = 1.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_player_castle"]
+albedo_color = Color(0.35, 0.73, 1, 1)
+metallic = 0.3
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.18, 0.38, 0.6, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_enemy_castle"]
+albedo_color = Color(1, 0.38, 0.49, 1)
+metallic = 0.3
+roughness = 0.3
+emission_enabled = true
+emission = Color(0.6, 0.18, 0.25, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_player_dice_zone"]
+flip_faces = true
+size = Vector3(4.5, 4.5, 8)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_8rigl"]
+data = PackedVector3Array(2.25, 2.25, 4, -2.25, 2.25, 4, -2.25, -2.25, 4, 2.25, -2.25, 4, 2.25, 2.25, 4, -2.25, -2.25, 4, -2.25, 2.25, -4, 2.25, 2.25, -4, 2.25, -2.25, -4, -2.25, -2.25, -4, -2.25, 2.25, -4, 2.25, -2.25, -4, 2.25, 2.25, -4, 2.25, 2.25, 4, 2.25, -2.25, 4, 2.25, -2.25, -4, 2.25, 2.25, -4, 2.25, -2.25, 4, -2.25, 2.25, 4, -2.25, 2.25, -4, -2.25, -2.25, -4, -2.25, -2.25, 4, -2.25, 2.25, 4, -2.25, -2.25, -4, -2.25, 2.25, 4, 2.25, 2.25, 4, 2.25, 2.25, -4, -2.25, 2.25, -4, -2.25, 2.25, 4, 2.25, 2.25, -4, 2.25, -2.25, 4, -2.25, -2.25, 4, -2.25, -2.25, -4, 2.25, -2.25, -4, 2.25, -2.25, 4, -2.25, -2.25, -4)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_pvro5"]
+data = PackedVector3Array(2.25, 2.25, 4, -2.25, 2.25, 4, -2.25, -2.25, 4, 2.25, -2.25, 4, 2.25, 2.25, 4, -2.25, -2.25, 4, -2.25, 2.25, -4, 2.25, 2.25, -4, 2.25, -2.25, -4, -2.25, -2.25, -4, -2.25, 2.25, -4, 2.25, -2.25, -4, 2.25, 2.25, -4, 2.25, 2.25, 4, 2.25, -2.25, 4, 2.25, -2.25, -4, 2.25, 2.25, -4, 2.25, -2.25, 4, -2.25, 2.25, 4, -2.25, 2.25, -4, -2.25, -2.25, -4, -2.25, -2.25, 4, -2.25, 2.25, 4, -2.25, -2.25, -4, -2.25, 2.25, 4, 2.25, 2.25, 4, 2.25, 2.25, -4, -2.25, 2.25, -4, -2.25, 2.25, 4, 2.25, 2.25, -4, 2.25, -2.25, 4, -2.25, -2.25, 4, -2.25, -2.25, -4, 2.25, -2.25, -4, 2.25, -2.25, 4, -2.25, -2.25, -4)
 
 [node name="BattleField" type="Node3D" unique_id=73827249]
-script = ExtResource("1_8rigl")
+script = ExtResource("1_battlefield")
+
+[node name="Ground" type="Node3D" parent="." unique_id=92737295]
+
+[node name="PlayerGround" type="CSGBox3D" parent="Ground" unique_id=781204132]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.5, -0.42, 0)
+use_collision = true
+size = Vector3(9, 0.18, 10)
+material = SubResource("StandardMaterial3D_player_ground")
+
+[node name="EnemyGround" type="CSGBox3D" parent="Ground" unique_id=1489651420]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -0.42, 0)
+use_collision = true
+size = Vector3(9, 0.18, 10)
+material = SubResource("StandardMaterial3D_enemy_ground")
+
+[node name="CenterDivider" type="CSGBox3D" parent="Ground" unique_id=103691814]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.22, 0)
+use_collision = true
+size = Vector3(0.45, 0.35, 8.8)
+material = SubResource("StandardMaterial3D_divider")
+
+[node name="Castles" type="Node3D" parent="." unique_id=1425850278]
+
+[node name="PlayerCastle" type="Node3D" parent="Castles" unique_id=1807621656]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.2, 0, 0)
+
+[node name="Base" type="CSGBox3D" parent="Castles/PlayerCastle" unique_id=1625743635]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+use_collision = true
+size = Vector3(1.05, 1.25, 1.7)
+material = SubResource("StandardMaterial3D_player_castle")
+
+[node name="Top" type="CSGBox3D" parent="Castles/PlayerCastle" unique_id=1744588985]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+use_collision = true
+size = Vector3(1.45, 0.25, 2.05)
+material = SubResource("StandardMaterial3D_player_castle")
+
+[node name="EnemyCastle" type="Node3D" parent="Castles" unique_id=1121818646]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.7495656, 0, 0)
+
+[node name="Base" type="CSGBox3D" parent="Castles/EnemyCastle" unique_id=198974536]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+use_collision = true
+size = Vector3(1.05, 1.25, 1.7)
+material = SubResource("StandardMaterial3D_enemy_castle")
+
+[node name="Top" type="CSGBox3D" parent="Castles/EnemyCastle" unique_id=1330078353]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+use_collision = true
+size = Vector3(1.45, 0.25, 2.05)
+material = SubResource("StandardMaterial3D_enemy_castle")
+
+[node name="DiceZones" type="Node3D" parent="." unique_id=374293987]
+
+[node name="PlayerDiceZone" type="StaticBody3D" parent="DiceZones" unique_id=231877592]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.2212486, 2, 0)
+
+[node name="DebugMesh" type="MeshInstance3D" parent="DiceZones/PlayerDiceZone" unique_id=1282896901]
+mesh = SubResource("BoxMesh_player_dice_zone")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DiceZones/PlayerDiceZone" unique_id=264755947]
+shape = SubResource("ConcavePolygonShape3D_8rigl")
+
+[node name="EnemyDiceZone" type="StaticBody3D" parent="DiceZones" unique_id=1351006921]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.929924, 2, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DiceZones/EnemyDiceZone" unique_id=473498916]
+shape = SubResource("ConcavePolygonShape3D_pvro5")
+
+[node name="DebugMesh" type="MeshInstance3D" parent="DiceZones" unique_id=1127648292]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9299245, 2, 0)
+visible = false
+mesh = SubResource("BoxMesh_player_dice_zone")
+
+[node name="SpawnMarkers" type="Node3D" parent="." unique_id=675982324]
+
+[node name="PlayerSpawn" type="Marker3D" parent="SpawnMarkers" unique_id=446267933]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 0, 0)
+
+[node name="EnemySpawn" type="Marker3D" parent="SpawnMarkers" unique_id=479614878]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 0, 0)

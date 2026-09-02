@@ -18,7 +18,6 @@ func _ready() -> void:
 	Game.dice_results_ready.connect(_on_dice_results_ready)
 	dice_ball.die_settled.connect(_on_die_settled)
 	dice_manager.roll_finished.connect(_on_roll_finished)
-	_build_battlefield()
 	$Camera3D.look_at(Vector3(0, 0, 0), Vector3.UP)
 
 func _on_roll_pressed() -> void:
@@ -94,27 +93,6 @@ func _make_unit(rarity: int, start: Vector3) -> Node3D:
 	halo.position.y = 0.05
 	unit.add_child(halo)
 	return unit
-
-func _build_battlefield() -> void:
-	_add_box(Vector3(18, 0.18, 10), Vector3(0, -0.42, 0), Color("102a45"))
-	_add_box(Vector3(0.45, 0.35, 8.8), Vector3(5.45, -0.22, 0), Color("4c315e"))
-	_add_fortress(Vector3(4.55, 0, 0), Color("ff617e"))
-	_add_fortress(Vector3(-7.2, 0, 0), Color("58baff"))
-	for z in [-2.5, 0.0, 2.5]:
-		_add_box(Vector3(0.08, 0.04, 1.35), Vector3(2.2, -0.28, z), Color("62c7e6"))
-
-func _add_fortress(at: Vector3, color: Color) -> void:
-	_add_box(Vector3(1.05, 1.25, 1.7), at + Vector3(0, 0.35, 0), color)
-	_add_box(Vector3(1.45, 0.25, 2.05), at + Vector3(0, 1.05, 0), color.lightened(0.18))
-
-func _add_box(box_size: Vector3, at: Vector3, color: Color) -> void:
-	var instance := MeshInstance3D.new()
-	var mesh := BoxMesh.new()
-	mesh.size = box_size
-	instance.mesh = mesh
-	instance.position = at
-	instance.material_override = _glow_material(color)
-	$Battlefield.add_child(instance)
 
 func _glow_material(color: Color) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
