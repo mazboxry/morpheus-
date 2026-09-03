@@ -22,6 +22,10 @@ var _units: Array[Node3D] = []
 var _enemy_units: Array[Node3D] = []
 var _active_tweens: Array[Tween] = []
 var _projectiles: Array[Node3D] = []
+var _enemy_die: RigidBody3D = null
+var _enemy_die_settled := false
+var _enemy_die_value := 0
+var _enemy_die_quiet_time := 0.0
 
 func _ready() -> void:
 	Game.dice_results_ready.connect(_on_dice_results_ready)
@@ -77,23 +81,36 @@ func _setup_castles() -> void:
 func _physics_process(delta: float) -> void:
 	if state == MatchState.MARCHING or state == MatchState.ENGAGED:
 		_process_combat_and_blocking(delta)
+	
+	if is_instance_valid(_enemy_die) and not _enemy_die_settled:
+		var is_slow: bool = _enemy_die.linear_velocity.length() < 0.35 and _enemy_die.angular_velocity.length() < 0.50
+		if is_slow:
+			_enemy_die_quiet_time += delta
+		else:
+			_enemy_die_quiet_time = 0.0
+		
+		if _enemy_die_quiet_time > 0.25:
+			_enemy_die_settled = true
+			_enemy_die.freeze = true
+			_enemy_die_value = _read_enemy_die_top_face(_enemy_die)
+			_on_enemy_die_settled(_enemy_die_value, _enemy_die.global_position)
 
 func _process_combat_and_blocking(delta: float) -> void:
 	# 1. ブロック判定（接近した敵の進軍を停止させる、その間自身も進軍停止）
 	var any_blocked := false
 	for unit in _units:
-		if not is_instance_valid(unit) or unit.get_meta("hp", 0) <= 0:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.get_meta("hp", 0) <= 0:
 			continue
 		for enemy in _enemy_units:
-			if not is_instance_valid(enemy) or enemy.get_meta("hp", 0) <= 0:
+			if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.get_meta("hp", 0) <= 0:
 				continue
 			
 			var dist := unit.global_position.distance_to(enemy.global_position)
 			var block_range: float = unit.get_meta("block_range", 1.1)
 			
 			if dist < block_range:
-				var u_blocking: Array = unit.get_meta("blocking", [])
-				var e_blocked_by: Node3D = enemy.get_meta("blocked_by", null)
+				var u_blocking: Array = unit.get_meta("blocking") if unit.has_meta("blocking") else []
+				var e_blocked_by: Node3D = enemy.get_meta("blocked_by") if enemy.has_meta("blocked_by") else null
 				var max_block: int = unit.get_meta("block_count_max", 1)
 				
 				if u_blocking.size() < max_block and e_blocked_by == null:
@@ -118,13 +135,13 @@ func _process_combat_and_blocking(delta: float) -> void:
 
 	# 2. オートエイム射撃（味方 -> 最寄りの敵、または敵城）
 	for unit in _units:
-		if not is_instance_valid(unit) or unit.get_meta("hp", 0) <= 0:
+		if not is_instance_valid(unit) or unit.is_queued_for_deletion() or unit.get_meta("hp", 0) <= 0:
 			continue
 		_update_shooting(unit, _enemy_units, true, delta)
 	
 	# 3. オートエイム射撃（敵 -> 最寄りの味方）
 	for enemy in _enemy_units:
-		if not is_instance_valid(enemy) or enemy.get_meta("hp", 0) <= 0:
+		if not is_instance_valid(enemy) or enemy.is_queued_for_deletion() or enemy.get_meta("hp", 0) <= 0:
 			continue
 		_update_shooting(enemy, _units, false, delta)
 
@@ -139,7 +156,7 @@ func _update_shooting(attacker: Node3D, target_pool: Array[Node3D], is_player: b
 		
 		# 1. まず生存している敵ユニットを優先探索
 		for candidate in target_pool:
-			if not is_instance_valid(candidate) or candidate.get_meta("hp", 0) <= 0:
+			if not is_instance_valid(candidate) or candidate.is_queued_for_deletion() or candidate.get_meta("hp", 0) <= 0:
 				continue
 			var d := attacker.global_position.distance_to(candidate.global_position)
 			if d < min_dist:
@@ -200,9 +217,12 @@ func _spawn_projectile(from_pos: Vector3, target: Node3D, damage: int, is_player
 	)
 
 func _apply_damage(target: Node3D, damage: int, from_player: bool) -> void:
-	if not is_instance_valid(target):
+	if not is_instance_valid(target) or target.is_queued_for_deletion():
 		return
-	var current_hp: int = target.get_meta("hp", 0) - damage
+	var current_hp: int = target.get_meta("hp", 0)
+	if current_hp <= 0:
+		return
+	current_hp -= damage
 	var max_hp: int = target.get_meta("max_hp", 100)
 	var is_castle: bool = target.get_meta("is_castle", false)
 	var is_player_castle: bool = target.get_meta("is_player_castle", false)
@@ -363,15 +383,16 @@ func _resume_unit_movement(unit: Node3D) -> void:
 			tween.play()
 
 func _release_blocks_for(dead_unit: Node3D) -> void:
-	var blocking: Array = dead_unit.get_meta("blocking", [])
+	var blocking: Array = dead_unit.get_meta("blocking") if dead_unit.has_meta("blocking") else []
 	for other in blocking:
 		if is_instance_valid(other):
-			other.set_meta("blocked_by", null)
+			if other.has_meta("blocked_by"):
+				other.remove_meta("blocked_by")
 			_resume_unit_movement(other)
 	
-	var blocker: Node3D = dead_unit.get_meta("blocked_by", null)
+	var blocker: Node3D = dead_unit.get_meta("blocked_by") if dead_unit.has_meta("blocked_by") else null
 	if is_instance_valid(blocker):
-		var blocker_list: Array = blocker.get_meta("blocking", [])
+		var blocker_list: Array = blocker.get_meta("blocking") if blocker.has_meta("blocking") else []
 		blocker_list.erase(dead_unit)
 		blocker.set_meta("blocking", blocker_list)
 		if blocker_list.is_empty():
@@ -384,9 +405,10 @@ func _on_roll_pressed() -> void:
 	roll_button.disabled = true
 	roll_button.text = "物理判定中…"
 	result_label.text = ""
-	status_label.text = "4つの RigidBody3D ダイスがトレイの中で転がっています"
+	status_label.text = "ダイスがトレイと敵ゾーンで物理的に転がっています"
 	dice_manager.begin_roll(DiceBall.DIE_COUNT)
 	dice_ball.roll()
+	_spawn_and_drop_enemy_die()
 
 func _on_reset_pressed() -> void:
 	_kill_active_tweens()
@@ -398,6 +420,12 @@ func _on_reset_pressed() -> void:
 		if is_instance_valid(unit):
 			unit.queue_free()
 	_units.clear()
+	if is_instance_valid(_enemy_die):
+		_enemy_die.queue_free()
+		_enemy_die = null
+	_enemy_die_settled = false
+	_enemy_die_value = 0
+	_enemy_die_quiet_time = 0.0
 	_spawn_test_enemy()
 	_setup_castles()
 	dice_ball.reset_dome()
@@ -600,3 +628,104 @@ func _glow_material(color: Color) -> StandardMaterial3D:
 	material.emission_enabled = true
 	material.emission = color.darkened(0.45)
 	return material
+
+func _spawn_and_drop_enemy_die() -> void:
+	if is_instance_valid(_enemy_die):
+		_enemy_die.queue_free()
+		_enemy_die = null
+	
+	_enemy_die_settled = false
+	_enemy_die_value = 0
+	_enemy_die_quiet_time = 0.0
+	var die := RigidBody3D.new()
+	die.name = "EnemyPhysicalDie"
+	die.continuous_cd = true
+	
+	var spawn_pos := Vector3(4.93, 3.4, 0.0)
+	if battlefield and battlefield.has_node("DiceZones/EnemyDiceZone"):
+		var zone: Node3D = battlefield.get_node("DiceZones/EnemyDiceZone")
+		spawn_pos = zone.global_position + Vector3(0, 1.4, 0)
+	die.position = spawn_pos
+	
+	var col := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3.ONE * 0.82
+	col.shape = shape
+	die.add_child(col)
+	
+	var mesh_inst := MeshInstance3D.new()
+	var box_mesh := BoxMesh.new()
+	box_mesh.size = Vector3.ONE * 0.82
+	mesh_inst.mesh = box_mesh
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color("c42b47")
+	mat.metallic = 0.3
+	mat.roughness = 0.35
+	mat.emission_enabled = true
+	mat.emission = Color("440810")
+	mesh_inst.material_override = mat
+	die.add_child(mesh_inst)
+	
+	_add_enemy_die_pips(die)
+	
+	var pmat := PhysicsMaterial.new()
+	pmat.friction = 0.75
+	pmat.bounce = 0.2
+	die.physics_material_override = pmat
+	
+	die.rotation = Vector3(randf() * TAU, randf() * TAU, randf() * TAU)
+	die.linear_velocity = Vector3(randf_range(-0.5, 0.5), -1.8, randf_range(-0.5, 0.5))
+	die.angular_velocity = Vector3(randf_range(-6.0, 6.0), randf_range(-6.0, 6.0), randf_range(-6.0, 6.0))
+	
+	add_child(die)
+	_enemy_die = die
+
+func _add_enemy_die_pips(die: RigidBody3D) -> void:
+	var face_dirs := [Vector3.UP, Vector3.DOWN, Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]
+	var face_vals := [1, 6, 3, 4, 2, 5]
+	var layouts := {
+		1: [Vector2.ZERO],
+		2: [Vector2(-1, -1), Vector2(1, 1)],
+		3: [Vector2(-1, -1), Vector2.ZERO, Vector2(1, 1)],
+		4: [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)],
+		5: [Vector2(-1, -1), Vector2(1, -1), Vector2.ZERO, Vector2(-1, 1), Vector2(1, 1)],
+		6: [Vector2(-1, -1), Vector2(-1, 0), Vector2(-1, 1), Vector2(1, -1), Vector2(1, 0), Vector2(1, 1)]
+	}
+	var pip_mat := StandardMaterial3D.new()
+	pip_mat.albedo_color = Color("ffffff")
+	pip_mat.roughness = 0.5
+	
+	for face in face_dirs.size():
+		var normal: Vector3 = face_dirs[face]
+		var tangent := Vector3.RIGHT if absf(normal.y) > 0.5 else Vector3.UP
+		var bitangent := normal.cross(tangent).normalized()
+		for point: Vector2 in layouts[face_vals[face]]:
+			var pip := MeshInstance3D.new()
+			var sphere := SphereMesh.new()
+			sphere.radius = 0.052
+			sphere.height = 0.104
+			pip.mesh = sphere
+			pip.material_override = pip_mat
+			pip.position = normal * 0.421 + tangent * point.x * 0.16 + bitangent * point.y * 0.16
+			die.add_child(pip)
+
+func _read_enemy_die_top_face(die: RigidBody3D) -> int:
+	var face_dirs := [Vector3.UP, Vector3.DOWN, Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]
+	var face_vals := [1, 6, 3, 4, 2, 5]
+	var best_dot := -2.0
+	var best_index := 0
+	for index in face_dirs.size():
+		var face_normal: Vector3 = die.global_transform.basis * face_dirs[index]
+		var up_alignment: float = face_normal.dot(Vector3.UP)
+		if up_alignment > best_dot:
+			best_dot = up_alignment
+			best_index = index
+	return face_vals[best_index]
+
+func _on_enemy_die_settled(face_value: int, landing_pos: Vector3) -> void:
+	status_label.text = "敵ダイス停止！ 出目: %d (着地: %+.1f, %+.1f)" % [face_value, landing_pos.x, landing_pos.z]
+	var current_text := result_label.text
+	if current_text.is_empty():
+		result_label.text = "敵ダイス出目: %d" % face_value
+	elif not current_text.contains("敵ダイス"):
+		result_label.text = current_text + "  |  敵ダイス出目: %d" % face_value
