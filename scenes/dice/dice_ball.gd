@@ -1,8 +1,9 @@
 class_name DiceBall
 extends Node3D
-## A reusable 3D dice tray with a SnowDome staging phase.
-## In the ready/staging phase, dice bounce within SnowDome using Area3D point gravity.
+## A reusable 3D dice tray with dynamic dice instantiation and a SnowDome staging phase.
+## In the ready/staging phase, freshly spawned dice bounce within SnowDome using Area3D point gravity.
 ## When roll() is called, SnowDome is disabled and hidden, releasing dice onto the tray.
+## When summoned, clear_dice() deletes the dice; reset_dome() respawns them fresh.
 
 signal die_settled(die_index: int, top_face: int, landing_position: Vector3)
 
@@ -10,76 +11,109 @@ const DIE_COUNT := 4
 const FACE_DIRECTIONS := [Vector3.UP, Vector3.DOWN, Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]
 const FACE_VALUES := [1, 6, 3, 4, 2, 5]
 const DIE_COLORS := [Color("7ee7ff"), Color("aa94ff"), Color("ffd56e"), Color("ff91b5")]
+const INITIAL_DICE_POSITIONS := [
+	Vector3(0.35, 3.3, 0.1),
+	Vector3(-0.3, 3.1, 0.3),
+	Vector3(-0.1, 2.8, -0.35),
+	Vector3(-0.4, 2.7, -0.2)
+]
 
 @onready var snow_dome: StaticBody3D = $SnowDome
 @onready var invisible_bumper: Area3D = $InvisibleBumper
 
 var _dice: Array[RigidBody3D] = []
-var _settled: Array[bool] = [false, false, false, false]
-var _quiet_time: Array[float] = [0.0, 0.0, 0.0, 0.0]
+var _settled: Array[bool] = []
+var _quiet_time: Array[float] = []
 var _rolling := false
+var _roll_elapsed_time := 0.0
 
 func _ready() -> void:
 	_build_tray()
 	_setup_dome_stage()
-	for index in DIE_COUNT:
-		var die := get_node("PhysicalDie%d" % (index + 1)) as RigidBody3D
-		_configure_die(die, index)
-		_dice.append(die)
+	_spawn_dice(DIE_COUNT)
 
 func _setup_dome_stage() -> void:
 	if snow_dome:
 		snow_dome.show()
 		snow_dome.process_mode = Node.PROCESS_MODE_INHERIT
+	if invisible_bumper:
+		invisible_bumper.process_mode = Node.PROCESS_MODE_INHERIT
+
+func _spawn_dice(count: int) -> void:
+	clear_dice()
+	_settled.clear()
+	_quiet_time.clear()
+	for index in count:
+		var die := RigidBody3D.new()
+		die.name = "PhysicalDie%d" % (index + 1)
+		die.continuous_cd = true
+		die.position = INITIAL_DICE_POSITIONS[index % INITIAL_DICE_POSITIONS.size()]
+		_configure_die(die, index)
+		add_child(die)
+		_dice.append(die)
+		_settled.append(false)
+		_quiet_time.append(0.0)
+
+func clear_dice() -> void:
+	_rolling = false
+	for die in _dice:
+		if is_instance_valid(die):
+			die.queue_free()
+	_dice.clear()
 
 func roll() -> void:
 	_rolling = true
-	_settled = [false, false, false, false]
-	_quiet_time = [0.0, 0.0, 0.0, 0.0]
+	_roll_elapsed_time = 0.0
+	_settled.resize(_dice.size())
+	_quiet_time.resize(_dice.size())
+	_settled.fill(false)
+	_quiet_time.fill(0.0)
 	if snow_dome:
 		snow_dome.hide()
 		snow_dome.process_mode = Node.PROCESS_MODE_DISABLED
+	_disable_bumper_after_delay()
 	for index in _dice.size():
 		var die := _dice[index]
 		die.freeze = false
 		die.apply_central_impulse(Vector3(randf_range(-1.2, 1.2), randf_range(0.2, 1.5), randf_range(-1.0, 1.0)))
 		die.apply_torque_impulse(Vector3(randf_range(-4.0, 4.0), randf_range(-4.0, 4.0), randf_range(-4.0, 4.0)))
 
+func _disable_bumper_after_delay() -> void:
+	await get_tree().create_timer(1.0).timeout
+	if _rolling and invisible_bumper:
+		invisible_bumper.process_mode = Node.PROCESS_MODE_DISABLED
+
 func reset_dome() -> void:
 	_rolling = false
-	_settled = [false, false, false, false]
-	_quiet_time = [0.0, 0.0, 0.0, 0.0]
+	_roll_elapsed_time = 0.0
 	if snow_dome:
 		snow_dome.show()
 		snow_dome.process_mode = Node.PROCESS_MODE_INHERIT
-	var initial_positions := [
-		Vector3(0.35, 3.3, 0.1),
-		Vector3(-0.3, 3.1, 0.3),
-		Vector3(-0.1, 2.8, -0.35),
-		Vector3(-0.4, 2.7, -0.2)
-	]
-	for index in _dice.size():
-		var die := _dice[index]
-		die.freeze = false
-		die.position = initial_positions[index % initial_positions.size()]
-		die.linear_velocity = Vector3.ZERO
-		die.angular_velocity = Vector3.ZERO
+	if invisible_bumper:
+		invisible_bumper.process_mode = Node.PROCESS_MODE_INHERIT
+	_spawn_dice(DIE_COUNT)
 
 func _physics_process(delta: float) -> void:
-	if not _rolling:
+	if not _rolling or _dice.is_empty():
 		return
+	_roll_elapsed_time += delta
+	var force_timeout: bool = _roll_elapsed_time > 2.5
 	for index in _dice.size():
-		if _settled[index]:
+		if index >= _settled.size() or _settled[index]:
 			continue
 		var die := _dice[index]
-		if die.linear_velocity.length() < 0.13 and die.angular_velocity.length() < 0.22 and die.position.y < 0.75:
+		if not is_instance_valid(die):
+			continue
+		var is_slow: bool = die.linear_velocity.length() < 0.35 and die.angular_velocity.length() < 0.50
+		if is_slow:
 			_quiet_time[index] += delta
-			if _quiet_time[index] > 0.55:
-				_settled[index] = true
-				die.freeze = true
-				die_settled.emit(index, _read_top_face(die), die.global_position)
 		else:
 			_quiet_time[index] = 0.0
+		
+		if _quiet_time[index] > 0.25 or force_timeout:
+			_settled[index] = true
+			die.freeze = true
+			die_settled.emit(index, _read_top_face(die), die.global_position)
 	if not _settled.has(false):
 		_rolling = false
 
@@ -101,7 +135,7 @@ func _configure_die(die: RigidBody3D, index: int) -> void:
 	var cube := BoxMesh.new()
 	cube.size = Vector3.ONE * 0.82
 	mesh.mesh = cube
-	mesh.material_override = _material(DIE_COLORS[index], 0.25)
+	mesh.material_override = _material(DIE_COLORS[index % DIE_COLORS.size()], 0.25)
 	die.add_child(mesh)
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
