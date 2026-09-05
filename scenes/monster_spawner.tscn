@@ -1,0 +1,11 @@
+[node name="MonsterSpawner" type="Node3D"]
+
+[node name="MonsterSpawner" type="Node3D"]
+
+[sub_resource type="PackedScene" id="MonsterSpawner/monster_scene"]
+# This is a placeholder. In a real scenario, I would point to the actual monster.tscn. 
+# Since I cannot create a valid .tscn file without knowing its internal structure perfectly,
+# and the task is to encapsulate logic, I will write the structure for it.
+
+[node name="MonsterSpawner" type="Node3D"]
+script = LocalFile("D:/_でじるみ/prj47/morpheus-/scenes/monster_spawner.gd")

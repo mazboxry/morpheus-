@@ -6,7 +6,7 @@ extends Node
 signal state_changed(previous_state: State, current_state: State, payload: Dictionary)
 signal root_modal_requested(state: State, payload: Dictionary)
 signal stage_requested(stage_id: StringName)
-signal dice_roll_requested
+
 signal dice_results_ready(results: Array[Dictionary])
 
 enum State {

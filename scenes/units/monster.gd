@@ -21,7 +21,16 @@ func setup(t, r):
 	rarity = r
 	hp = max_hp * r
 	attack_power *= r
+	# 头上カラー変更（例: rarity 1=赤, 6=青）
+	var color = Color(1, 0, 0).lerp(Color(0, 0, 1), (r - 1)/5)
+	#$HeadMesh.material_override.color = color
+	print("")
 
+func _ready():
+	# ダイスロールマネージャーに接続
+	var dice_roll_manager = get_node("/root/ShowcaseMain/DiceRollManager")
+	dice_roll_manager.connect("die_stopped", Callable(self, "_on_die_stopped"))
+	
 func _physics_process(delta):
 	if hp <= 0:
 		return
@@ -110,3 +119,7 @@ func _get_speed_modifier():
 func _spawn_status_icon(type):
 	# tscn差し替え前提
 	pass
+
+func _on_die_stopped(result):
+	# ダイスの結果を受け取ってモンスターを初期化
+	setup(team, result["rarity"])

@@ -12,6 +12,7 @@ enum MatchState { READY, ROLLING, SUMMONING, MARCHING, ENGAGED, VICTORY, DEFEAT 
 @onready var dice_ball: DiceBall = $DiceBall
 @onready var army: Node3D = $Army
 @onready var battlefield: Node3D = $Battlefield
+@onready var monster_spawner: Node3D = $MonsterSpawner
 
 const ENEMY_CASTLE_INITIAL_HP := 500
 const PLAYER_CASTLE_INITIAL_HP := 500
@@ -206,13 +207,13 @@ func _spawn_projectile(from_pos: Vector3, target: Node3D, damage: int, is_player
 	var dist := proj.global_position.distance_to(target_pos)
 	var duration := clampf(dist / 12.0, 0.12, 0.35)
 	
-	var tween := create_tween()
+	var tween := proj.create_tween()
 	tween.tween_property(proj, "global_position", target_pos, duration).set_trans(Tween.TRANS_LINEAR)
 	tween.tween_callback(func():
-		if is_instance_valid(proj):
+		if is_instance_valid(proj) and not proj.is_queued_for_deletion():
 			_projectiles.erase(proj)
 			proj.queue_free()
-		if is_instance_valid(target):
+		if is_instance_valid(target) and not target.is_queued_for_deletion():
 			_apply_damage(target, damage, is_player)
 	)
 
@@ -238,7 +239,7 @@ func _apply_damage(target: Node3D, damage: int, from_player: bool) -> void:
 		else:
 			label.text = "HP %d/%d" % [max(current_hp, 0), max_hp]
 	
-	var hit_tween := create_tween()
+	var hit_tween := target.create_tween()
 	if is_castle:
 		hit_tween.tween_property(target, "scale", Vector3(1.04, 0.96, 1.04), 0.05)
 		hit_tween.tween_property(target, "scale", Vector3.ONE, 0.06)
@@ -267,7 +268,7 @@ func _trigger_victory(enemy_castle: Node3D) -> void:
 			proj.queue_free()
 	_projectiles.clear()
 	
-	var destroy_tween := create_tween()
+	var destroy_tween := enemy_castle.create_tween()
 	destroy_tween.tween_property(enemy_castle, "scale", Vector3.ZERO, 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	destroy_tween.tween_callback(func():
 		if is_instance_valid(enemy_castle):
@@ -289,7 +290,7 @@ func _trigger_defeat(player_castle: Node3D) -> void:
 			proj.queue_free()
 	_projectiles.clear()
 	
-	var destroy_tween := create_tween()
+	var destroy_tween := player_castle.create_tween()
 	destroy_tween.tween_property(player_castle, "scale", Vector3.ZERO, 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	destroy_tween.tween_callback(func():
 		if is_instance_valid(player_castle):
@@ -315,10 +316,10 @@ func _kill_unit(unit: Node3D, killed_by_player: bool) -> void:
 	_units.erase(unit)
 	_enemy_units.erase(unit)
 	
-	var die_tween := create_tween()
+	var die_tween := unit.create_tween()
 	die_tween.tween_property(unit, "scale", Vector3.ZERO, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	die_tween.tween_callback(func():
-		if is_instance_valid(unit):
+		if is_instance_valid(unit) and not unit.is_queued_for_deletion():
 			unit.queue_free()
 	)
 	
@@ -462,6 +463,8 @@ func _on_dice_results_ready(results: Array[Dictionary]) -> void:
 		unit.scale = Vector3.ZERO
 		var tween := create_tween()
 		tween.tween_property(unit, "scale", Vector3.ONE, 0.45).set_trans(Tween.TRANS_BACK)
+		if unit.has_node("AnimationPlayer"):
+			unit.get_node("AnimationPlayer").play("WALK")
 	_spawn_test_enemy()
 	await get_tree().create_timer(1.0).timeout
 	_start_march()

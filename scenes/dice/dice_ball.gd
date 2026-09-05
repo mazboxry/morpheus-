@@ -161,13 +161,18 @@ func _add_pips(die: RigidBody3D) -> void:
 			die.add_child(pip)
 
 func _build_tray() -> void:
-	var floor := StaticBody3D.new()
-	floor.name = "DiceTrayFloor"
-	floor.physics_material_override = _physics_material(0.86, 0.08)
-	add_child(floor)
-	_add_box(floor, Vector3(8.8, 0.22, 6.0), Vector3(0, -0.12, 0), Color("183158"))
+	# ダイス台を作成
+	var current_floor = StaticBody3D.new()
+	current_floor.name = "DiceTrayFloor"
+	current_floor.physics_material_override = _physics_material(0.86, 0.08)
+	add_child(current_floor)
+
+	# キャビネット部を作成
+	_add_box(current_floor, Vector3(8.8, 0.22, 6.0), Vector3(0, -0.12, 0), Color("183158"))
+
+	# 壁を追加
 	for wall in [[Vector3(9.1, 1.0, 0.24), Vector3(0, 0.48, -3.0)], [Vector3(9.1, 1.0, 0.24), Vector3(0, 0.48, 3.0)], [Vector3(0.24, 1.0, 6.0), Vector3(-4.45, 0.48, 0)], [Vector3(0.24, 1.0, 6.0), Vector3(4.45, 0.48, 0)]]:
-		_add_box(floor, wall[0], wall[1], Color("345985"))
+		_add_box(current_floor, wall[0], wall[1], Color("345985"))
 
 func _add_box(parent: Node3D, box_size: Vector3, local_position: Vector3, color: Color) -> void:
 	var mesh := MeshInstance3D.new()

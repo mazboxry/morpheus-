@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://biiqpqecy7f0v"]
 
 [ext_resource type="Script" uid="uid://cowgqh8phdpyq" path="res://scenes/battle_field.gd" id="1_battlefield"]
+[ext_resource type="PackedScene" uid="uid://cn1bxx86bea0" path="res://scenes/units/monster.tscn" id="2_pvro5"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_player_ground"]
 albedo_color = Color(0.06, 0.16, 0.28, 1)
@@ -48,6 +49,7 @@ data = PackedVector3Array(2.25, 2.25, 4, -2.25, 2.25, 4, -2.25, -2.25, 4, 2.25, 
 
 [node name="BattleField" type="Node3D" unique_id=73827249]
 script = ExtResource("1_battlefield")
+monster_scene = ExtResource("2_pvro5")
 
 [node name="Ground" type="Node3D" parent="." unique_id=92737295]
 
