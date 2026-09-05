@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://b7vnasxwxwkpj"]
 
 [ext_resource type="Script" uid="uid://c7wbfqiu8rycq" path="res://scenes/showcase_main.gd" id="1_main"]
-[ext_resource type="Script" uid="uid://bxndrubfku3wv" path="res://scenes/dice/dice_roll_manager.gd" id="3_manager"]
-[ext_resource type="PackedScene" uid="uid://ch6fnordrpr" path="res://scenes/dice/dice_ball.tscn" id="3_wp22r"]
+[ext_resource type="Script" uid="uid://bxndrubfku3wv" path="res://scenes/managers/dice_manager.gd" id="3_manager"]
+[ext_resource type="PackedScene" uid="uid://ch6fnordrpr" path="res://scenes/dice/dice_dome.tscn" id="3_wp22r"]
 [ext_resource type="PackedScene" uid="uid://biiqpqecy7f0v" path="res://scenes/battle_field.tscn" id="4_battlefield"]
 
 [sub_resource type="Environment" id="Environment_main"]

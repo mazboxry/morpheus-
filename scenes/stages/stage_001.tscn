@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://bf6l2uwxm3ahh"]
+
+[ext_resource type="Script" uid="uid://b1qa01ejfrvr5" path="res://scenes/stages/stage.gd" id="1_stage"]
+
+[node name="Stage" type="Node3D" unique_id=935148775]
+script = ExtResource("1_stage")
+stage_id = &"stage_template"
+
+[node name="Battlefield" type="Node3D" parent="." unique_id=1135056595]
+
+[node name="PlayerSpawnZone" type="Marker3D" parent="." unique_id=449575895]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+
+[node name="EnemySpawnZone" type="Marker3D" parent="." unique_id=1585543135]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
+
+[node name="PlayerCastle" type="Node3D" parent="." unique_id=1840373728]
+
+[node name="EnemyCastle" type="Node3D" parent="." unique_id=136989741]
+
+[node name="StageArt" type="Node3D" parent="." unique_id=369475909]
+
+[node name="Obstacles" type="Node3D" parent="." unique_id=683342818]
+
+[node name="Ground" type="Node3D" parent="." unique_id=1795240614]

@@ -1,23 +1,25 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://bjvj708xp0qdp"]
 
-[ext_resource type="Script" path="res://scenes/stages/stage.gd" id="1_stage"]
+[ext_resource type="Script" uid="uid://b1qa01ejfrvr5" path="res://scenes/stages/stage.gd" id="1_stage"]
 
-[node name="Stage" type="Node3D"]
+[node name="Stage" type="Node3D" unique_id=186595573]
 script = ExtResource("1_stage")
 stage_id = &"stage_template"
 
-[node name="Battlefield" type="Node3D" parent="."]
+[node name="Battlefield" type="Node3D" parent="." unique_id=1598906712]
 
-[node name="PlayerSpawnZone" type="Marker3D" parent="."]
-position = Vector3(0, 0, 4)
+[node name="PlayerSpawnZone" type="Marker3D" parent="." unique_id=284753391]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
 
-[node name="EnemySpawnZone" type="Marker3D" parent="."]
-position = Vector3(0, 0, -4)
+[node name="EnemySpawnZone" type="Marker3D" parent="." unique_id=850191007]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
 
-[node name="PlayerCastle" type="Node3D" parent="."]
+[node name="PlayerCastle" type="Node3D" parent="." unique_id=1323447845]
 
-[node name="EnemyCastle" type="Node3D" parent="."]
+[node name="EnemyCastle" type="Node3D" parent="." unique_id=459433420]
 
-[node name="StageArt" type="Node3D" parent="."]
+[node name="StageArt" type="Node3D" parent="." unique_id=813241815]
 
-[node name="Obstacles" type="Node3D" parent="."]
+[node name="Obstacles" type="Node3D" parent="." unique_id=1716323461]
+
+[node name="Ground" type="Node3D" parent="." unique_id=625524442]

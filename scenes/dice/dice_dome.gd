@@ -1,4 +1,4 @@
-class_name DiceBall
+class_name DiceDome
 extends Node3D
 ## A reusable 3D dice tray with dynamic dice instantiation and a SnowDome staging phase.
 ## In the ready/staging phase, freshly spawned dice bounce within SnowDome using Area3D point gravity.
@@ -26,18 +26,19 @@ var _settled: Array[bool] = []
 var _quiet_time: Array[float] = []
 var _rolling := false
 var _roll_elapsed_time := 0.0
-
+var player_idx=0 # 0がプレイヤー 1が敵　だが　4陣くらいで戦えようにしても良い
 func _ready() -> void:
-	_build_tray()
 	_setup_dome_stage()
 	_spawn_dice(DIE_COUNT)
-
+	if "Dice" in Game.managers:
+		Game.manage
 func _setup_dome_stage() -> void:
 	if snow_dome:
 		snow_dome.show()
 		snow_dome.process_mode = Node.PROCESS_MODE_INHERIT
 	if invisible_bumper:
 		invisible_bumper.process_mode = Node.PROCESS_MODE_INHERIT
+	Game.dice_dome_initialized.emit()
 
 func _spawn_dice(count: int) -> void:
 	clear_dice()

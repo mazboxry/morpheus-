@@ -2,12 +2,26 @@ extends Node
 ## Global entry point for coarse game flow only.
 ## Scene-local progression (for example MainGame's DiceRoll -> MarchMain)
 ## intentionally belongs to the scene that owns that flow.
-
+#signals
 signal state_changed(previous_state: State, current_state: State, payload: Dictionary)
 signal root_modal_requested(state: State, payload: Dictionary)
 signal stage_requested(stage_id: StringName)
+signal dice_dome_requested(position:Vector3,player_idx:int)
 
 signal dice_results_ready(results: Array[Dictionary])
+
+func _connect_signals():
+	#世のルール
+	#ダイスドームがリクエスされたら　ダイスドームを生成する
+	dice_dome_requested.connect(dice_manager._on_dice_dome_requested)
+	
+	
+	
+var dice_manager:DiceManager=DiceManager.new()
+var spawn_manager:SpawnManager=SpawnManager.new()	
+		
+func spawn(object:Node3D,layer:String):
+	spawn_manager.spawn(object,layer)
 
 enum State {
 	BOOT,
@@ -33,17 +47,16 @@ const ROOT_MODAL_SCENES := {
 
 var state: State = State.BOOT
 var current_stage_id: StringName = &"stage_001"
-
-
+var main_stage:Node3D
 func _ready() -> void:
 	transition_to(State.BOOT)
-
+	
 
 func transition_to(next_state: State, payload: Dictionary = {}) -> void:
 	var previous_state := state
 	state = next_state
-	state_changed.emit(previous_state, state, payload)
-	root_modal_requested.emit(state, payload)
+	#state_changed.emit(previous_state, state, payload)
+	#root_modal_requested.emit(state, payload)
 
 
 func open_title() -> void:
